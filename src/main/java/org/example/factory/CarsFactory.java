@@ -39,16 +39,16 @@ public class CarsFactory {
             }
         }
     }
-    public Car createCar(String type, String brand, String model, int horsePower, double cost) { // create car with specific options
+    public Car createCar(String type, String brand, String model, int horsePower, double cost, String carId) { // create car with specific options
         switch (type) {
             case "basic" -> {
-                return new BasicCar(brand, model, horsePower, cost);
+                return new BasicCar(brand, model, horsePower, cost, carId);
             }
             case "sedan" -> {
-                return new SedanCarDecorator(new BasicCar(brand, model, horsePower, cost));
+                return new SedanCarDecorator(new BasicCar(brand, model, horsePower, cost, carId));
             }
             case "coupe" -> {
-                return new CoupeCarDecorator(new BasicCar(brand, model, horsePower, cost));
+                return new CoupeCarDecorator(new BasicCar(brand, model, horsePower, cost, carId));
             }
             default -> {
                 return null;

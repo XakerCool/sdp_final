@@ -21,7 +21,7 @@ public class SaloonFactoryAdapter {
         this.events = new EventManager("create", "order");
     }
 
-    public void OrderCar(String subtype, String type, String brand, String model, int horsePower, double cost, String paymentType) {
+    public void OrderCar(String subtype, String type, String brand, String model, int horsePower, double cost, String carId, String paymentType) {
         System.out.println(order.setOrder(type, brand, model));
         if (paymentType.equals("cash")) {
             events.notify("order", new PayByCash(client));
@@ -32,8 +32,12 @@ public class SaloonFactoryAdapter {
         if (subtype.equals("default")) {
             car = factory.createCar(type);
         } else {
-            car = factory.createCar(type, brand, model, horsePower, cost);
+            car = factory.createCar(type, brand, model, horsePower, cost, carId);
         }
         events.notify("create", car);
+    }
+
+    public void upgradeCar() {
+
     }
 }

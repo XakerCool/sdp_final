@@ -17,4 +17,21 @@ public class CoupeCarDecorator extends CarDecorator {
     public double getCost() {
         return this.decoratedCar.getCost() + 4000.0;
     }
+    @Override
+    public String getBrand() {
+        return this.decoratedCar.getBrand();
+    }
+    @Override
+    public String getModel() {
+        return this.decoratedCar.getModel();
+    }
+    @Override
+    public int getHorsePower() {
+        return this.decoratedCar.getHorsePower();
+    }
+
+    @Override
+    public String getCarId() {
+        return this.decoratedCar.getCarId();
+    }
 }
