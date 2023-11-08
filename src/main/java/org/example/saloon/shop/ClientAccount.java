@@ -66,4 +66,8 @@ public class ClientAccount {
         }
         return "";
     }
+
+    public Client getClient() {
+        return this.client;
+    }
 }
