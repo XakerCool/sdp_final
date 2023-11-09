@@ -7,7 +7,11 @@ import org.example.saloon.notifications.*;
 import org.example.saloon.payment.*;
 import org.example.saloon.shop.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SaloonFactoryAdapter {
+    List<Car> carsInSaloon = new ArrayList<Car>();
     private ClientAccount clientAccount;
     private Order order;
     private CarsFactory factory;
@@ -26,13 +30,7 @@ public class SaloonFactoryAdapter {
         this.events = new EventManager("create", "order");
     }
 
-    public void OrderCar(String subtype, String type, String brand, String model, int horsePower, double cost, String carId, String paymentType) {
-        System.out.println(order.setOrder(type, brand, model));
-        if (paymentType.equals("cash")) {
-            events.notify("order", new PayByCash(this.clientAccount.getClient()));
-        } else {
-            events.notify("order", new PayByCard(this.clientAccount.getClient()));
-        }
+    public void createCar(String subtype, String type, String brand, String model, int horsePower, double cost) {
         Car car = null;
         switch (type) {
             case "basic" -> {
@@ -51,12 +49,33 @@ public class SaloonFactoryAdapter {
         if (subtype.equals("default")) {
             car = factory.createCar();
         } else {
-            car = factory.createCar(brand, model, horsePower, cost, carId);
+            car = factory.createCar(brand, model, horsePower, cost, "CAR - " + carsInSaloon.size());
         }
         events.notify("create", car);
+        carsInSaloon.add(car);
+    }
+
+    public Car OrderCar(String carId, String paymentType) {
+        Car orderedCar = null;
+        for (Car car: carsInSaloon) {
+            if (car.getCarId().equals(carId)) {
+                orderedCar = car;
+            }
+        }
+        System.out.println(order.setOrder(orderedCar.getBrand(), orderedCar.getModel()));
+        if (paymentType.equals("cash")) {
+            events.notify("order", new PayByCash(this.clientAccount.getClient()));
+        } else {
+            events.notify("order", new PayByCard(this.clientAccount.getClient()));
+        }
+        carsInSaloon.remove(orderedCar);
+        return orderedCar;
     }
 
     public void upgradeCar(String carId, String ...upgrades) {
         this.clientAccount.upgradeCar(carId, upgrades);
+    }
+    public List<Car> getCarsInSaloon() {
+        return this.carsInSaloon;
     }
 }

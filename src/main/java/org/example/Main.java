@@ -3,6 +3,7 @@ package org.example;
 import org.example.factory.cars.BasicCar;
 import org.example.factory.cars.Car;
 import org.example.factory.cars.concrete_cars.UpgradableCar;
+import org.example.factory_saloon_adapter.SaloonFactoryAdapter;
 import org.example.saloon.notifications.EventManager;
 import org.example.saloon.notifications.listeners.EmailNotificationListener;
 import org.example.saloon.notifications.listeners.SMSNotificationListener;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+    public static SaloonFactoryAdapter saloonFactoryAdapter;
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -45,6 +47,7 @@ public class Main {
 
             }
         }
+        saloonFactoryAdapter = SaloonFactoryAdapter.getInstance(clientAccount);
         System.out.println("#####################");
         EventManager eventManager = new EventManager("create", "order");
 
@@ -66,8 +69,6 @@ public class Main {
             }
         }
 
-        List<Car> createdCars = new ArrayList<>();
-
         int choice;
         while (true) {
             System.out.println("#####################");
@@ -77,19 +78,19 @@ public class Main {
             switch (choice) {
                 case 1 -> {
                     System.out.println("#####################");
-                    createCar(scanner, createdCars);
+                    createCar(scanner);
                 }
                 case 2 -> {
                     System.out.println("#####################");
-                    viewCreatedCars(createdCars);
+                    viewCreatedCars();
                 }
                 case 3 -> {
                     System.out.println("#####################");
-                    purchaseCar(scanner, createdCars, clientAccount, eventManager);
+                    purchaseCar(scanner, clientAccount, eventManager);
                 }
                 case 4 -> {
                     System.out.println("#####################");
-                    addCustomizations(scanner, createdCars);
+                    addCustomizations(scanner);
                 }
                 case 5 -> {
                     System.out.println("#####################");
@@ -118,7 +119,16 @@ public class Main {
         System.out.print("Enter your choice: ");
     }
 
-    private static void createCar(Scanner scanner, List<Car> createdCars) {
+    private static void createCar(Scanner scanner) {
+        System.out.print("First of all, type the subtype of car: default, nondefault -> ");
+        String subtype = scanner.nextLine();
+        String type = "";
+        if (!subtype.equals("default")) {
+            System.out.print("Now input the type of car (sedan, coupe): ");
+            type = scanner.nextLine();;
+        } else {
+            type = "basic";
+        }
         System.out.print("Enter car brand: ");
         String make = scanner.nextLine();
         System.out.print("Enter car model: ");
@@ -127,17 +137,16 @@ public class Main {
         int horsepower = scanner.nextInt();
         scanner.nextLine(); // Consume newline
 
-        Car car = new BasicCar(make, model, horsepower, 20000, "CAR-" + createdCars.size());
-        createdCars.add(car);
+        saloonFactoryAdapter.createCar(subtype, type, make, model, horsepower, 20000);
         System.out.println("Car created successfully.");
     }
 
-    private static void viewCreatedCars(List<Car> createdCars) {
-        if (createdCars.isEmpty()) {
+    private static void viewCreatedCars() {
+        if (saloonFactoryAdapter.getCarsInSaloon().isEmpty()) {
             System.out.println("No cars have been created yet.");
         } else {
             System.out.println("Created Cars:");
-            for (Car createdCar : createdCars) {
+            for (Car createdCar : saloonFactoryAdapter.getCarsInSaloon()) {
                 System.out.println("Car ID: " + createdCar.getCarId());
                 System.out.println(createdCar.getDescription());
                 System.out.println("--------------");
@@ -145,15 +154,15 @@ public class Main {
         }
     }
 
-    private static void addCustomizations(Scanner scanner, List<Car> createdCars) {
-        if (createdCars.isEmpty()) {
+    private static void addCustomizations(Scanner scanner) {
+        if (saloonFactoryAdapter.getCarsInSaloon().isEmpty()) {
             System.out.println("No cars have been created yet.");
         } else {
             System.out.print("Enter the Car ID to add customizations: ");
             String carIdToAddMore = scanner.nextLine();
             Car carToAddMore = null;
 
-            for (Car createdCar : createdCars) {
+            for (Car createdCar : saloonFactoryAdapter.getCarsInSaloon()) {
                 if (createdCar.getCarId().equals(carIdToAddMore)) {
                     carToAddMore = createdCar;
                     break;
@@ -177,15 +186,15 @@ public class Main {
         }
     }
 
-    private static void purchaseCar(Scanner scanner, List<Car> createdCars, ClientAccount clientAccount, EventManager eventManager) {
-        if (createdCars.isEmpty()) {
+    private static void purchaseCar(Scanner scanner, ClientAccount clientAccount, EventManager eventManager) {
+        if (saloonFactoryAdapter.getCarsInSaloon().isEmpty()) {
             System.out.println("No cars have been created yet.");
         } else {
             System.out.print("Enter the Car ID you want to purchase: ");
             String carIdToPurchase = scanner.nextLine();
             Car carToPurchase = null;
 
-            for (Car createdCar : createdCars) {
+            for (Car createdCar : saloonFactoryAdapter.getCarsInSaloon()) {
                 if (createdCar.getCarId().equals(carIdToPurchase)) {
                     carToPurchase = createdCar;
                     break;
@@ -205,8 +214,7 @@ public class Main {
                         int cost = (int) carToPurchase.getCost(); // Assuming cost is in integer format
                         String cashPayment = new PayByCash(clientAccount.getClient()).pay(cost, cost);
                         System.out.println(cashPayment);
-                        String name= clientAccount.toString();
-                        System.out.println(" ");
+                        saloonFactoryAdapter.OrderCar(carIdToPurchase, cashPayment);
                         System.out.println("________________________________________________ ");
                         System.out.println("Dear client you have received a notification");
 
@@ -229,6 +237,7 @@ public class Main {
                         System.out.println(cardPayment);
                         System.out.println("Payment method: " + cardPaymentMethod);
                         System.out.println(" ");
+                        saloonFactoryAdapter.OrderCar(carIdToPurchase, cardPaymentMethod);
                         System.out.println("________________________________________________ ");
                         System.out.println("Dear client you have received a notification");
 
@@ -245,7 +254,6 @@ public class Main {
 
 
                 // Remove the purchased car from the list of created cars
-                createdCars.remove(carToPurchase);
                 clientAccount.addCarToList(carToPurchase);
                 System.out.println("Car purchased successfully.");
             } else {
