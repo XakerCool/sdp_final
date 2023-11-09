@@ -20,78 +20,89 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        // Create a client account
-        System.out.print("Enter your phone number: ");
-        String phoneNumber = scanner.nextLine();
-        System.out.print("Enter your email: ");
-        String email = scanner.nextLine();
+        System.out.print("login or register: ");
+        String loginOrRegister = scanner.nextLine();
 
-        // Inside the Main class
-        Client client = new Client(phoneNumber, email);
-        ClientAccount clientAccount = new ClientAccount(client);
+        ClientAccount clientAccount = new ClientAccount();
+
+        switch (loginOrRegister) {
+            case "login" -> {
+                System.out.print("Input your user-id: ");
+                clientAccount.login(Integer.parseInt(scanner.nextLine()));
+            }
+            case "register" -> {
+                System.out.print("Input your name: ");
+                String name = scanner.nextLine();
+                System.out.print("Input your surname: ");
+                String surname = scanner.nextLine();
+                System.out.print("Input your phone number: ");
+                String phoneNumber = scanner.nextLine();
+                System.out.print("Input your email: ");
+                String email = scanner.nextLine();
+                System.out.println("New user was added to the system: user id is " + clientAccount.registerUser(name, surname, phoneNumber, email));
+            }
+            default -> {
+
+            }
+        }
+        System.out.println("#####################");
         EventManager eventManager = new EventManager("create", "order");
 
-// Ask for notification preference
-        System.out.println("Do you want to receive notifications about your orders? ");
-        System.out.println("1. Yes");
-        System.out.println("2. No");
-        int notificationChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        // Ask for notification preference
+        System.out.print("Do you want to receive notifications about your orders? 1 - yes; 2 - no: ");
+        int notificationChoice = Integer.parseInt(scanner.nextLine());
 
         if (notificationChoice == 1) {
-            System.out.println("Select notification method: ");
-            System.out.println("1. Email");
-            System.out.println("2. SMS");
-            int notificationMethodChoice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            System.out.println("Select notification method: 1 - Email; 2 - SMS -> ");
+            int notificationMethodChoice = Integer.parseInt(scanner.nextLine());
             if (notificationMethodChoice == 1) {
                 // Use email notification
-                EmailNotificationListener emailListener = new EmailNotificationListener(email);
+                EmailNotificationListener emailListener = new EmailNotificationListener(clientAccount.getClient().getEmail());
                 eventManager.subscribe("order", emailListener);
             } else if (notificationMethodChoice == 2) {
                 // Use SMS notification
-                SMSNotificationListener smsListener = new SMSNotificationListener(phoneNumber);
+                SMSNotificationListener smsListener = new SMSNotificationListener(clientAccount.getClient().getPhoneNumber());
                 eventManager.subscribe("order", smsListener);
             }
         }
-
-
-// The rest of your code remains the same, and you can use the eventManager to notify listeners.
 
         List<Car> createdCars = new ArrayList<>();
 
         int choice;
         while (true) {
+            System.out.println("#####################");
             printMenu();
-            choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            choice = Integer.parseInt(scanner.nextLine());
 
             switch (choice) {
-                case 1:
+                case 1 -> {
+                    System.out.println("#####################");
                     createCar(scanner, createdCars);
-                    break;
-
-                case 2:
+                }
+                case 2 -> {
+                    System.out.println("#####################");
                     viewCreatedCars(createdCars);
-                    break;
-
-                case 3:
+                }
+                case 3 -> {
+                    System.out.println("#####################");
                     purchaseCar(scanner, createdCars, clientAccount, eventManager);
-                    break;
-
-                case 4:
+                }
+                case 4 -> {
+                    System.out.println("#####################");
                     addCustomizations(scanner, createdCars);
-                    break;
-
-                case 5:
-                    // Exit the program
+                }
+                case 5 -> {
+                    System.out.println("#####################");
+                    System.out.println(clientAccount.getUserInfo());
+                }
+                case 6 -> {
                     System.out.println("Goodbye!");
                     scanner.close();
                     System.exit(0);
-
-                default:
+                }
+                default -> {
                     System.out.println("Invalid choice. Please select a valid option.");
-                    break;
+                }
             }
         }
     }
@@ -102,7 +113,8 @@ public class Main {
         System.out.println("2. View created cars");
         System.out.println("3. Purchase a car");
         System.out.println("4. Add more to the car");
-        System.out.println("5. Exit");
+        System.out.println("5. View client info");
+        System.out.println("6. Exit");
         System.out.print("Enter your choice: ");
     }
 

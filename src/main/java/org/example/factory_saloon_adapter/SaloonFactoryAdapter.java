@@ -1,24 +1,28 @@
 package org.example.factory_saloon_adapter;
 
-import org.example.factory.CarsFactory;
+import org.example.factory.*;
 import org.example.factory.cars.Car;
-import org.example.saloon.notifications.EventManager;
-import org.example.saloon.payment.PayByCard;
-import org.example.saloon.payment.PayByCash;
-import org.example.saloon.shop.Client;
-import org.example.saloon.shop.ClientAccount;
-import org.example.saloon.shop.Order;
+import org.example.factory.cars.concrete_factories.*;
+import org.example.saloon.notifications.*;
+import org.example.saloon.payment.*;
+import org.example.saloon.shop.*;
 
 public class SaloonFactoryAdapter {
     private ClientAccount clientAccount;
     private Order order;
     private CarsFactory factory;
     public EventManager events;
+    public static SaloonFactoryAdapter saloonFactoryAdapter;
+    public static SaloonFactoryAdapter getInstance(ClientAccount clientAccount) {
+        if (saloonFactoryAdapter == null) {
+            saloonFactoryAdapter = new SaloonFactoryAdapter(clientAccount);
+        }
+        return saloonFactoryAdapter;
+    }
 
-    public SaloonFactoryAdapter(ClientAccount clientAccount, CarsFactory factory) {
+    private SaloonFactoryAdapter(ClientAccount clientAccount) {
         this.clientAccount = clientAccount;
         this.order = new Order(this.clientAccount.getClient());
-        this.factory = factory;
         this.events = new EventManager("create", "order");
     }
 
@@ -30,10 +34,24 @@ public class SaloonFactoryAdapter {
             events.notify("order", new PayByCard(this.clientAccount.getClient()));
         }
         Car car = null;
+        switch (type) {
+            case "basic" -> {
+                factory = new BasicCarFactory();
+            }
+            case "sedan" -> {
+                factory = new SedanCarFactory();
+            }
+            case "coupe" -> {
+                factory = new CoupeCarFactory();
+            }
+            default -> {
+
+            }
+        }
         if (subtype.equals("default")) {
-            car = factory.createCar(type);
+            car = factory.createCar();
         } else {
-            car = factory.createCar(type, brand, model, horsePower, cost, carId);
+            car = factory.createCar(brand, model, horsePower, cost, carId);
         }
         events.notify("create", car);
     }
