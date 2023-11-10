@@ -70,6 +70,7 @@ public class ClientAccount {
             newUser.put("surname", surname);
             newUser.put("phoneNumber", phoneNumber);
             newUser.put("email", email);
+            this.client = new Client(name, surname, phoneNumber, email);
 
             FileWriter file = new FileWriter("src/main/java/org/example/saloon/users/client-" + userId + ".json");
             file.write(newUser.toJSONString());
